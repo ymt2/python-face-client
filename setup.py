@@ -8,18 +8,14 @@ version_re = re.compile(
     r'__version__ = (\(.*?\))')
 
 cwd = os.path.dirname(os.path.abspath(__file__))
-fp = open(os.path.join(cwd, 'face_client', '__init__.py'))
-
-version = None
-for line in fp:
-    match = version_re.search(line)
-    if match:
-        version = eval(match.group(1))
-        break
-else:
-    raise Exception('Cannot find version in __init__.py')
-fp.close()
-
+with open(os.path.join(cwd, 'face_client', '__init__.py')) as fp:
+    version = None
+    for line in fp:
+        if match := version_re.search(line):
+            version = eval(match[1])
+            break
+    else:
+        raise Exception('Cannot find version in __init__.py')
 setup(name='face_client',
       version='.' . join(map(str, version)),
       description='face.com face recognition Python API client library',
