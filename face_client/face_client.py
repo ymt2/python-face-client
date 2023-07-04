@@ -73,7 +73,7 @@ class FaceClient(object):
         if file:
             # Check if the file exists
             if not os.path.exists(file):
-                raise IOError('File %s does not exist' % (file))
+                raise IOError(f'File {file} does not exist')
 
             data = {'file': file}
         else:
@@ -82,8 +82,7 @@ class FaceClient(object):
         if aggressive:
             data['detector'] = 'Aggressive'
 
-        response = self.send_request('faces/detect', data)
-        return response
+        return self.send_request('faces/detect', data)
 
     def faces_status(self, uids=None, namespace=None):
         """
@@ -95,14 +94,13 @@ class FaceClient(object):
             raise AttributeError('Missing user IDs')
 
         (facebook_uids, twitter_uids) = \
-                self.__check_user_auth_credentials(uids)
+                    self.__check_user_auth_credentials(uids)
 
         data = {'uids': uids}
         self.__append_user_auth_data(data, facebook_uids, twitter_uids)
         self.__append_optional_arguments(data, namespace=namespace)
 
-        response = self.send_request('faces/status', data)
-        return response
+        return self.send_request('faces/status', data)
 
     def faces_recognize(self, uids=None, urls=None, file=None, train=None,
                         namespace=None):
@@ -120,25 +118,24 @@ class FaceClient(object):
             raise AttributeError('Missing required arguments')
 
         (facebook_uids, twitter_uids) = \
-                self.__check_user_auth_credentials(uids)
+                    self.__check_user_auth_credentials(uids)
 
         data = {'uids': uids}
 
         if file:
             # Check if the file exists
             if not os.path.exists(file):
-                raise IOError('File %s does not exist' % (file))
+                raise IOError(f'File {file} does not exist')
 
-            data.update({'file': file})
+            data['file'] = file
         else:
-            data.update({'urls': urls})
+            data['urls'] = urls
 
         self.__append_user_auth_data(data, facebook_uids, twitter_uids)
         self.__append_optional_arguments(data, train=train,
                                          namespace=namespace)
 
-        response = self.send_request('faces/recognize', data)
-        return response
+        return self.send_request('faces/recognize', data)
 
     def faces_train(self, uids=None, namespace=None):
         """
@@ -151,18 +148,17 @@ class FaceClient(object):
             raise AttributeError('Missing user IDs')
 
         (facebook_uids, twitter_uids) = \
-                self.__check_user_auth_credentials(uids)
+                    self.__check_user_auth_credentials(uids)
 
         data = {'uids': uids}
         self.__append_user_auth_data(data, facebook_uids, twitter_uids)
         self.__append_optional_arguments(data, namespace=namespace)
 
-        response = self.send_request('faces/train', data)
-        return response
+        return self.send_request('faces/train', data)
 
     ### Methods for managing face tags ###
     def tags_get(self, uids=None, urls=None, pids=None, order='recent', \
-                limit=5, together=False, filter=None, namespace=None):
+                    limit=5, together=False, filter=None, namespace=None):
         """
         Returns saved tags in one or more photos, or for the specified
         User ID(s).
@@ -173,7 +169,7 @@ class FaceClient(object):
         http://developers.face.com/docs/api/tags-get/
         """
         (facebook_uids, twitter_uids) = \
-                self.__check_user_auth_credentials(uids)
+                    self.__check_user_auth_credentials(uids)
 
         data = {'uids': uids,
                 'urls': urls,
@@ -183,8 +179,7 @@ class FaceClient(object):
         self.__append_optional_arguments(data, pids=pids, filter=filter,
                                         namespace=namespace)
 
-        response = self.send_request('tags/get', data)
-        return response
+        return self.send_request('tags/get', data)
 
     def tags_add(self, url=None, x=None, y=None, width=None, uid=None,
                 tagger_id=None, label=None, password=None):
@@ -208,11 +203,10 @@ class FaceClient(object):
         self.__append_user_auth_data(data, facebook_uids, twitter_uids)
         self.__append_optional_arguments(data, label=label, password=password)
 
-        response = self.send_request('tags/add', data)
-        return response
+        return self.send_request('tags/add', data)
 
     def tags_save(self, tids=None, uid=None, tagger_id=None, label=None, \
-                password=None):
+                    password=None):
         """
         Saves a face tag. Use this method to save tags for training the
         face.com index, or for future use of the faces.detect and tags.get
@@ -231,8 +225,7 @@ class FaceClient(object):
         self.__append_optional_arguments(data, tagger_id=tagger_id,
                                          label=label, password=password)
 
-        response = self.send_request('tags/save', data)
-        return response
+        return self.send_request('tags/save', data)
 
     def tags_remove(self, tids=None, password=None):
         """
@@ -245,8 +238,7 @@ class FaceClient(object):
 
         data = {'tids': tids}
 
-        response = self.send_request('tags/remove', data)
-        return response
+        return self.send_request('tags/remove', data)
 
     ### Account management methods ###
     def account_limits(self):
@@ -269,10 +261,7 @@ class FaceClient(object):
         if not namespaces:
             raise AttributeError('Missing namespaces argument')
 
-        response = self.send_request('account/users',
-                                     {'namespaces': namespaces})
-
-        return response
+        return self.send_request('account/users', {'namespaces': namespaces})
 
     def __check_user_auth_credentials(self, uids):
         # Check if needed credentials are provided
@@ -293,9 +282,11 @@ class FaceClient(object):
 
     def __append_user_auth_data(self, data, facebook_uids, twitter_uids):
         if facebook_uids:
-            data.update({'user_auth': 'fb_user:%s,fb_session:%s' %
-                         (self.facebook_credentials['fb_user'],
-                         self.facebook_credentials['fb_session'])})
+            data.update(
+                {
+                    'user_auth': f"fb_user:{self.facebook_credentials['fb_user']},fb_session:{self.facebook_credentials['fb_session']}"
+                }
+            )
 
         if twitter_uids:
             # If both user/password and OAuth credentials are provided, use
@@ -309,10 +300,11 @@ class FaceClient(object):
                              self.twitter_credentials['twitter_oauth_token']))}
                             )
             else:
-                data.update({'user_auth':
-                             'twitter_user:%s,twitter_password:%s' %
-                             (self.twitter_credentials['twitter_user'],
-                             self.twitter_credentials['twitter_password'])})
+                data.update(
+                    {
+                        'user_auth': f"twitter_user:{self.twitter_credentials['twitter_user']},twitter_password:{self.twitter_credentials['twitter_password']}"
+                    }
+                )
 
     def __append_optional_arguments(self, data, **kwargs):
         for key, value in kwargs.iteritems():
@@ -320,14 +312,14 @@ class FaceClient(object):
                 data.update({key: value})
 
     def send_request(self, method=None, parameters=None):
-        url = '%s/%s' % (API_URL, method)
+        url = f'{API_URL}/{method}'
 
         data = {'api_key': self.api_key,
                 'api_secret': self.api_secret,
                 'format': self.format}
 
         if parameters:
-            data.update(parameters)
+            data |= parameters
 
         # Local file is provided, use multi-part form
         if 'file' in parameters:
@@ -355,7 +347,7 @@ class FaceClient(object):
         response_data = json.loads(response)
 
         if 'status' in response_data and \
-            response_data['status'] == 'failure':
+                response_data['status'] == 'failure':
             raise FaceError(response_data['error_code'],
                             response_data['error_message'])
 

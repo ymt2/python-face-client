@@ -48,15 +48,14 @@ class Part(object):
         self._body = body
         # We respect any content type passed in, but otherwise set it here.
         # We set the content disposition now, overwriting any prior value.
-        if self._filename == None:
-            self._headers[Part.CONTENT_DISPOSITION] = \
-                ('form-data; name="%s"' % self._name)
+        if self._filename is None:
+            self._headers[Part.CONTENT_DISPOSITION] = f'form-data; name="{self._name}"'
             self._headers.setdefault(Part.CONTENT_TYPE,
                                      Part.DEFAULT_CONTENT_TYPE)
         else:
-            self._headers[Part.CONTENT_DISPOSITION] = \
-                ('form-data; name="%s"; filename="%s"' %
-                 (self._name, self._filename))
+            self._headers[
+                Part.CONTENT_DISPOSITION
+            ] = f'form-data; name="{self._name}"; filename="{self._filename}"'
             self._headers.setdefault(Part.CONTENT_TYPE,
                                      mimetypes.guess_type(filename)[0]
                                      or Part.DEFAULT_CONTENT_TYPE)
@@ -71,12 +70,9 @@ class Part(object):
         @return: Lines of this part.
         @rtype: list
         '''
-        lines = []
-        lines.append('--' + Part.BOUNDARY)
-        for (key, val) in self._headers.items():
-            lines.append('%s: %s' % (key, val))
-        lines.append('')
-        lines.append(self._body)
+        lines = [f'--{Part.BOUNDARY}']
+        lines.extend(f'{key}: {val}' for key, val in self._headers.items())
+        lines.extend(('', self._body))
         return lines
 
 
@@ -142,8 +138,8 @@ class Multipart(object):
         all = []
         for part in self.parts:
             all += part.get()
-        all.append('--' + Part.BOUNDARY + '--')
+        all.append(f'--{Part.BOUNDARY}--')
         all.append('')
         # We have to return the content type, since it specifies the boundary.
-        content_type = 'multipart/form-data; boundary=%s' % Part.BOUNDARY
+        content_type = f'multipart/form-data; boundary={Part.BOUNDARY}'
         return content_type, Part.CRLF.join(all)
